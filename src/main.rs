@@ -10,7 +10,7 @@ pub const EFI_DTB_TABLE_GUID: Guid = guid!("b1b621d5-f19c-41a5-830b-d9152c69aae0
 fn list_configuration_tables(st: &SystemTable<Boot>) {
     st.config_table()
         .iter()
-        .for_each(|config| info!("entry: {}", config.guid))
+        .for_each(|config| info!(" - {}", config.guid))
 }
 
 fn get_efi_dtb_table(st: &SystemTable<Boot>) -> u64 {
@@ -25,9 +25,9 @@ fn get_efi_dtb_table(st: &SystemTable<Boot>) -> u64 {
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     uefi::helpers::init(&mut system_table).unwrap();
     info!("Configuration tables found:");
-    get_efi_dtb_table(&system_table);
+    list_configuration_tables(&system_table);
     info!("Looking for DTB table");
-    info!("{}", get_efi_dtb_table(&system_table));
+    info!("EFI_DTB_TABLE at: 0x{:x}", get_efi_dtb_table(&system_table));
     system_table.boot_services().stall(10_000_000);
     Status::SUCCESS
 }

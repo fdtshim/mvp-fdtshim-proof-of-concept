@@ -5,8 +5,10 @@ case "$RUST_TARGET" in
 	aarch64*) qemu=qemu-system-aarch64 ;;
 esac
 
+BIOS="${BIOS:-"${OVMF}/OVMF.fd"}"
+
 ARGS=(
-	--bios-path="${OVMF}/OVMF.fd"
+	--bios-path="${BIOS}"
 	--boot "target/${RUST_TARGET}/debug/uefi-hello-world.efi"
 	--add-file "target/${RUST_TARGET}/debug/uefi-hello-world.efi:EFI/Boot/BootAA64.efi"
 	--qemu-path "$qemu"
