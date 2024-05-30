@@ -6,5 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+flat_device_tree = { version = "3.1.0", features = ["pretty-printing"] }
 log = "0.4.21"
 uefi = { version = "0.28.0", features = ["logger", "panic_handler"] }

@@ -21,6 +21,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "flat_device_tree"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2330deedc13cbc90fefab9c2f6021a31a3c2da4eb23bd4e2c3fb8434dfc082dd"
+
+[[package]]
 name = "log"
 version = "0.4.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -115,6 +121,7 @@ dependencies = [
 name = "uefi-hello-world"
 version = "0.1.0"
 dependencies = [
+ "flat_device_tree",
  "log",
  "uefi",
 ]
