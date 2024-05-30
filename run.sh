@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+set -e
+set -u
+PS4=" $ "
+
+(
+set -x
+cargo build --target "$RUST_TARGET"
+)
+
 case "$RUST_TARGET" in
 	x86_64*) qemu=qemu-system-x86_64 ;;
 	aarch64*) qemu=qemu-system-aarch64 ;;
@@ -20,11 +29,12 @@ QEMU_ARGS=(
 )
 
 if [[ $RUST_TARGET == "aarch64-unknown-uefi" ]]; then
-	qemu-system-aarch64 -machine virt -cpu cortex-a57 -machine dumpdtb=test.dtb
-	ARGS+=(--add-file "test.dtb:EFI/Boot/virt.dtb")
 	QEMU_ARGS+=(-cpu cortex-a57)
 	QEMU_ARGS+=(-machine virt)
-	QEMU_ARGS+=(-dtb test.dtb)
+	# Dumping the dtb
+	qemu-system-aarch64 "${QEMU_ARGS[@]}" -machine dumpdtb=test.dtb
+	#QEMU_ARGS+=(-dtb test.dtb)
+	#ARGS+=(--add-file "test.dtb:EFI/Boot/virt.dtb")
 fi
 
 ARGS+=(
@@ -32,7 +42,6 @@ ARGS+=(
 	"${QEMU_ARGS[@]}"
 )
 
-PS4=" $ "
 set -x
 
 exec uefi-run "${ARGS[@]}"
