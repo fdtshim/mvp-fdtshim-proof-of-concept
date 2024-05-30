@@ -35,6 +35,7 @@ if [[ $RUST_TARGET == "aarch64-unknown-uefi" ]]; then
 	qemu-system-aarch64 "${QEMU_ARGS[@]}" -machine dumpdtb=test.dtb
 	#QEMU_ARGS+=(-dtb test.dtb)
 	#ARGS+=(--add-file "test.dtb:EFI/Boot/virt.dtb")
+	ARGS+=(--add-file "test.dtb:test.dtb")
 fi
 
 ARGS+=(

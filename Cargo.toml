@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 flat_device_tree = { version = "3.1.0", features = ["pretty-printing"] }
 log = "0.4.21"
-uefi = { version = "0.28.0", features = ["logger", "panic_handler"] }
+uefi = { version = "0.28.0", features = ["logger", "panic_handler", "global_allocator", "alloc"] }
