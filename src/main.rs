@@ -57,17 +57,25 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
     let boot_services = system_table.boot_services();
 
     info!("");
-    info!("Reading test.dtb");
-    let test_data = read_file(boot_services, "test.dtb").expect("Could not load test.dtb!!");
-    info!("test.dtb size: {}", test_data.len());
-    let test_fdt = fdt::Fdt::from_ptr(test_data.as_ptr()).unwrap();
-    info!("This is a devicetree representation of a {}", test_fdt.root().expect("").model());
-    info!("...which is compatible with at least: {}", test_fdt.root().expect("").compatible().first().expect(""));
-    info!("...and has {} CPU(s)", test_fdt.cpus().count());
-    info!(
-        "...and has at least one memory location at: {:#X}\n",
-        test_fdt.memory().expect("").regions().next().unwrap().starting_address as usize
-    );
+    info!("Reading mapping.dtb");
+    let mapping_data = read_file(boot_services, r"dtbs\mapping.dtb").expect("Could not load mapping.dtb!!");
+    info!("mapping.dtb size: {}", mapping_data.len());
+    let mapping_fdt = fdt::Fdt::from_ptr(mapping_data.as_ptr()).unwrap();
+    info!("");
+    //info!("{mapping_fdt:?}");
+    let mapping_info = mapping_fdt.find_node("/mapping").expect("No /mapping entry...");
+    info!("");
+    info!("Data in mapping.dtb:");
+    for node in mapping_info.children() {
+        info!(" - {}", node.name);
+    }
+    let matched_by_fdt = mapping_fdt
+        .find_compatible(&["linux,dummy-virt"]) // XXX
+        .expect("dummy-virt not found")
+        ;
+    info!("");
+    info!("Found entry: {}", matched_by_fdt.property("dtb").unwrap().as_str().unwrap());
+    info!("-----------");
 
     info!("");
     info!("Configuration tables found:");
