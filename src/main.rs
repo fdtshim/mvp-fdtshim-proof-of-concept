@@ -8,6 +8,9 @@ extern crate alloc;
 
 use alloc::vec;
 use alloc::vec::Vec;
+use alloc::string;
+use alloc::string::String;
+use alloc::string::ToString;
 
 extern crate flat_device_tree as fdt;
 use core::ffi::c_void;
@@ -18,7 +21,8 @@ use uefi::table::boot::SearchType;
 use uefi::{Identify, Result};
 
 use uefi::CString16;
-use uefi::fs::{FileSystem, FileSystemResult};
+use uefi::CStr16;
+use uefi::fs::{FileSystem, FileSystemResult, PathBuf, Path};
 use uefi::proto::media::fs::SimpleFileSystem;
 use uefi::table::boot::ScopedProtocol;
 
@@ -42,11 +46,18 @@ fn get_efi_dtb_table(st: &SystemTable<Boot>) -> *const c_void {
 
 
 // https://docs.rs/uefi/latest/uefi/fs/index.html#use-str-as-path
-fn read_file(bs: &BootServices, path: &str) -> FileSystemResult<Vec<u8>> {
-    let path: CString16 = CString16::try_from(path).unwrap();
+fn read_file(bs: &BootServices, path: CString16) -> FileSystemResult<Vec<u8>> {
+    info!("read_file({path})");
     let fs: ScopedProtocol<SimpleFileSystem> = bs.get_image_file_system(bs.image_handle()).unwrap();
     let mut fs = FileSystem::new(fs);
-    fs.read(path.as_ref())
+    fs.read(Path::new(&path))
+}
+
+fn path_for(path: &str) -> CString16 {
+    // XXX this would look at the parameter-provided `dtbs` path instead of hardcoded `dtbs`
+    let mut p = PathBuf::from(cstr16!(r"\dtbs"));
+    p.push(PathBuf::from(CString16::try_from(path).unwrap()));
+    p.to_cstr16().into()
 }
 
 #[entry]
@@ -58,7 +69,7 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
 
     info!("");
     info!("Reading mapping.dtb");
-    let mapping_data = read_file(boot_services, r"dtbs\mapping.dtb").expect("Could not load mapping.dtb!!");
+    let mapping_data = read_file(boot_services, path_for("mapping.dtb")).expect("Could not load mapping.dtb!!");
     info!("mapping.dtb size: {}", mapping_data.len());
     let mapping_fdt = fdt::Fdt::from_ptr(mapping_data.as_ptr()).unwrap();
     info!("");
@@ -69,33 +80,36 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
     for node in mapping_info.children() {
         info!(" - {}", node.name);
     }
-    let matched_by_fdt = mapping_fdt
-        .find_compatible(&["linux,dummy-virt"]) // XXX
-        .expect("dummy-virt not found")
-        ;
-    info!("");
-    info!("Found entry: {}", matched_by_fdt.property("dtb").unwrap().as_str().unwrap());
-    info!("-----------");
 
     info!("");
     info!("Configuration tables found:");
     list_configuration_tables(&system_table);
     info!("Looking for DTB table");
     let addr = get_efi_dtb_table(&system_table);
+    info!("");
     info!("EFI_DTB_TABLE at: {addr:?}");
     let fdt = fdt::Fdt::from_ptr(addr as *const u8).unwrap();
 
-    //  info!("");
-    //  info!("{fdt:?}");
-    //  info!("");
-
+    let compatible = fdt.root().expect("").compatible().first().unwrap();
     info!("This is a devicetree representation of a {}", fdt.root().expect("").model());
-    info!("...which is compatible with at least: {}", fdt.root().expect("").compatible().first().expect(""));
+    info!("...which is compatible with at least: {}", compatible);
     info!("...and has {} CPU(s)", fdt.cpus().count());
     info!(
         "...and has at least one memory location at: {:#X}\n",
         fdt.memory().expect("").regions().next().unwrap().starting_address as usize
     );
+
+    let matched_by_fdt = mapping_fdt
+        .find_compatible(&[compatible])
+        .expect("Compatible not found")
+        ;
+    let dtb_path = matched_by_fdt.property("dtb").unwrap().as_str().unwrap();
+    info!("");
+    info!("-----------");
+    info!("This device matches DTB path: {}", dtb_path);
+    info!("-----------");
+
+    let dtb = read_file(boot_services, path_for(dtb_path)).expect("Could not load device-specific dtb!!");
 
     let dt_fixup_handle = *boot_services
         .locate_handle_buffer(SearchType::ByProtocol(&DtFixup::GUID))
@@ -110,18 +124,24 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
         .expect("EFI_DT_FIXUP_PROTOCOL could not be opened")
         ;
     info!("Found EFI_DT_FIXUP_PROTOCOL!");
-    let x = 1; // XXX should be the read size...
-    // XXX should not use the innate FDT `addr`!!!!
+
+    let dtb_p = dtb.as_ptr() as *const c_void;
+
+    let size = dtb.len();
+    info!("Loaded dtb binary size: {size}");
     let result =
-        match dt_fixup.fixup(addr, &x, DtFixupFlags::DtApplyFixups) {
-            Ok(result) => result,
+        match dt_fixup.fixup(dtb_p, &size, DtFixupFlags::DtApplyFixups) {
+            Ok(result) => {
+                info!("Required buffer size: {size}");
+                result
+            },
             Err(status) => {
                 match status.status() {
                     Status::BUFFER_TOO_SMALL => {
                         // XXX -> should allocate a new buffer, copy, get rid of the old one.
-                        info!("Required buffer size: {x}");
+                        info!("Required buffer size: {size}");
                         info!("re-trying!");
-                        dt_fixup.fixup(addr, &x, DtFixupFlags::DtApplyFixups)
+                        dt_fixup.fixup(dtb_p, &size, DtFixupFlags::DtApplyFixups)
                     }
                     _ => { panic!("Error! {status}") }
                 }
