@@ -1,118 +1,126 @@
 /dts-v1/;
 
 / {
-	// Prop names are arbitrary, but should match the dtb path scheme.
-	// `$vendor/$board.dtb` → `$vendor@$board`
-	rockchip@rk3399-pinebook-pro {
-		dtb = "rockchip/rk3399-pinebook-pro.dtb";
-		// Compatible string should be the root compatible string of the device.
-		// TODO: define what to do for devices with conflated compatible names.
-		compatible = "pine64,pinebook-pro";
-		dmi-match {
-			// All of those entries would be good matches
-			// The two first ones would be preferred and sufficient.
-			svn = "PINE64";       // System vendor
-			pn  = "PinebookPro";  // Product name
-			// rvn = "PINE64";       // Board vendor
-			// rn  = "PinebookPro";  // Board name
-			// cvn = "PINE64";       // Chassis vendor
+	fdtshim,schema-version = "0.1";
+	compatible = "fdtshim,mapping";
+	linux,kernel-version = "6.x.y"; // metadata for convenience...
+	// TODO: see what other metadata could be added...
+	mapping {
+		// Prop names are arbitrary, but should match the dtb path scheme.
+		// `$vendor/$board.dtb` → `$vendor@$board`
+		rockchip@rk3399-pinebook-pro {
+			dtb = "rockchip/rk3399-pinebook-pro.dtb";
+			// Compatible string should be the root compatible string of the device.
+			// TODO: define what to do for devices with conflated compatible names.
+			compatible = "pine64,pinebook-pro";
+			dmi-match {
+				// All of those entries would be good matches
+				// The two first ones would be preferred and sufficient.
+				svn = "PINE64";       // System vendor
+				pn  = "PinebookPro";  // Product name
+				// rvn = "PINE64";       // Board vendor
+				// rn  = "PinebookPro";  // Board name
+				// cvn = "PINE64";       // Chassis vendor
 
-			// Different BIOS vendors. Not a good match
-			// bvn = "Tow-Boot";
-			// bvr = "Tow-Boot2023.07007-rc4-pre[variantspi]";
-			// bd  = "07/01/2023";
-			// br  = "23.7";
-			// Chassis type will rarely be good
-			// ct  = "9";
-			// Empty/Missing entries, not good matches
-			// pvr = "";
-			// rvr = "";
-			// cvr = "";
-			// sku = "";
+				// Different BIOS vendors. Not a good match
+				// bvn = "Tow-Boot";
+				// bvr = "Tow-Boot2023.07007-rc4-pre[variantspi]";
+				// bd  = "07/01/2023";
+				// br  = "23.7";
+				// Chassis type will rarely be good
+				// ct  = "9";
+				// Empty/Missing entries, not good matches
+				// pvr = "";
+				// rvr = "";
+				// cvr = "";
+				// sku = "";
+			};
 		};
-	};
-	allwinner@sun50i-a64-pinebook {
-		dtb = "allwinner/sun50i-a64-pinebook.dtb";
-		// compatible = "pine64,pinebook"; // Commented-out for testing
-		dmi-match {
-			svn = "PINE64";
-			pn  = "Pinebook" // Vendor naming scheme
-			    , "Pinebook(A64)" // Tow-Boot naming scheme
-			;
+		allwinner@sun50i-a64-pinebook {
+			dtb = "allwinner/sun50i-a64-pinebook.dtb";
+			// compatible = "pine64,pinebook"; // Commented-out for testing
+			dmi-match {
+				svn = "PINE64";
+				pn  = "Pinebook" // Vendor naming scheme
+					, "Pinebook(A64)" // Tow-Boot naming scheme
+				;
+			};
+			// Tow-Boot builds
+			//dmi-match {
+			//	svn = "PINE64";
+			//	pn  = "Pinebook(A64)";
+			//	//rvn = "PINE64";
+			//	//rn  = "Pinebook(A64)";
+			//	//cvn = "PINE64";
+			//	//ct  = "9";
+			//	//bvn = "Tow-Boot";
+			//	//bvr = "Tow-Boot2023.07007-rc4-pre[variantmmcboot]";
+			//	//bd  = "07/01/2023";
+			//	//br  = "23.7";
+			//	//cvr = "";
+			//	//sku = "";
+			//	//pvr = "";
+			//	//rvr = "";
+			//};
 		};
-		// Tow-Boot builds
-		//dmi-match {
-		//	svn = "PINE64";
-		//	pn  = "Pinebook(A64)";
-		//	//rvn = "PINE64";
-		//	//rn  = "Pinebook(A64)";
-		//	//cvn = "PINE64";
-		//	//ct  = "9";
-		//	//bvn = "Tow-Boot";
-		//	//bvr = "Tow-Boot2023.07007-rc4-pre[variantmmcboot]";
-		//	//bd  = "07/01/2023";
-		//	//br  = "23.7";
-		//	//cvr = "";
-		//	//sku = "";
-		//	//pvr = "";
-		//	//rvr = "";
-		//};
-	};
-	rockchip@rk3399-roc-pc-mezzanine {
-		// While it's not the case, if it also had `firefly,roc-rk3399-pc`
-		// as an additional entry in `compatible`, it would need to be
-		// listed first, or else the `firefly,roc-rk3399-pc` entry would
-		// be matched here.
-		dtb = "rockchip/rk3399-roc-pc-mezzanine.dtb";
-		compatible = "firefly,roc-rk3399-pc-mezzanine";
-	};
-	rockchip@rk3399-roc-pc {
-		dtb = "rockchip/rk3399-roc-pc.dtb";
-		compatible = "firefly,roc-rk3399-pc";
-	};
+		rockchip@rk3399-roc-pc-mezzanine {
+			// While it's not the case, if it also had `firefly,roc-rk3399-pc`
+			// as an additional entry in `compatible`, it would need to be
+			// listed first, or else the `firefly,roc-rk3399-pc` entry would
+			// be matched here.
+			dtb = "rockchip/rk3399-roc-pc-mezzanine.dtb";
+			compatible = "firefly,roc-rk3399-pc-mezzanine";
+		};
+		rockchip@rk3399-roc-pc {
+			dtb = "rockchip/rk3399-roc-pc.dtb";
+			compatible = "firefly,roc-rk3399-pc";
+		};
 
-	// XXX: fictitious match on my non-DT computer to roleplay.
-	amd@ryzen-starbook-b6-a {
-		dmi-match {
-			// Any of the MODALIAS fields can be found here.
-			// TODO: Add "matching" support (e.g. wildcards)
-			// NOTE: matching on bios properties is recommended against.
-			// Matching the chassis, board and product name is recommended.
-			// These matches can be changed later down the line, as they
-			// are not built with the shim, but part of metadata intended
-			// to be built alongside the kernel dtb.
-			// Casting too-wide a net on DMI matches is not a big problem...
+		// XXX: fictitious match on my non-DT computer to roleplay.
+		amd@ryzen-starbook-b6-a {
+			dmi-match {
+				// Any of the MODALIAS fields can be found here.
+				// TODO: Add "matching" support (e.g. wildcards)
+				// NOTE: matching on bios properties is recommended against.
+				// Matching the chassis, board and product name is recommended.
+				// These matches can be changed later down the line, as they
+				// are not built with the shim, but part of metadata intended
+				// to be built alongside the kernel dtb.
+				// Casting too-wide a net on DMI matches is not a big problem...
 
-			// Best discriminator for Mk.VI AMD
-			svn = "StarLabs"; // System vendor
-			pn  = "StarBook"; // Product name
-			sku = "B6-A";     // Represents Starbook Mk.VI, with AMD
-			
-			// Redundant
-			// rvn = "StarLabs"; // Board vendor
-			// rn  = "StarBook"; // Board name
+				// Best discriminator for Mk.VI AMD
+				svn = "StarLabs"; // System vendor
+				pn  = "StarBook"; // Product name
+				sku = "B6-A";     // Represents Starbook Mk.VI, with AMD
+				
+				// Redundant
+				// rvn = "StarLabs"; // Board vendor
+				// rn  = "StarBook"; // Board name
 
-			// Unlikely to be a useful match
-			// rvr = "Version1.0";
-			// pvr = "Version1.0";
-			// efr = "2.0";
-			// Also the vendor provides AMI and EDKII builds.
-			// bvn = "AmericanMegatrendsInternational,LLC.";
-			// bvr = "1.7.0";
-			// bd  = "04/13/2023";
-			// br  = "1.7";
-			// cvn = "Defaultstring";
-			// ct  = "10";
-			// cvr = "Defaultstring";
+				// Unlikely to be a useful match
+				// rvr = "Version1.0";
+				// pvr = "Version1.0";
+				// efr = "2.0";
+				// Also the vendor provides AMI and EDKII builds.
+				// bvn = "AmericanMegatrendsInternational,LLC.";
+				// bvr = "1.7.0";
+				// bd  = "04/13/2023";
+				// br  = "1.7";
+				// cvn = "Defaultstring";
+				// ct  = "10";
+				// cvr = "Defaultstring";
+			};
 		};
 	};
 };
 
 // Test entries
 / {
-	virt@linux-dummy-virt {
-		dtb = "virt.dtb";
-		compatible = "linux,dummy-virt";
-		// TODO: dmi-match
+	mapping {
+		virt@linux-dummy-virt {
+			dtb = "virt/linux-dummy-virt.dtb";
+			compatible = "linux,dummy-virt";
+			// TODO: dmi-match
+		};
 	};
 };
