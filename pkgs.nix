@@ -1,6 +1,6 @@
 { pkgs }:
 
-/*
+#/*
 let pkgs' = pkgs; in # XXX
 let pkgs = pkgs'.pkgsCross.aarch64-multiplatform; in # XXX
 /* */
@@ -82,6 +82,7 @@ in
     , OVMF
     , uefi-run
     , qemu
+    , dtc
     }:
     mkShell {
       RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/";
@@ -92,6 +93,7 @@ in
         rustToolchain
         uefi-run
         qemu
+        dtc
       ];
     }
   ) {

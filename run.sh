@@ -7,6 +7,7 @@ PS4=" $ "
 (
 set -x
 cargo build --target "$RUST_TARGET"
+dtc -q -I dts mapping.dts -o mapping.dtb
 )
 
 case "$RUST_TARGET" in
@@ -35,7 +36,8 @@ if [[ $RUST_TARGET == "aarch64-unknown-uefi" ]]; then
 	qemu-system-aarch64 "${QEMU_ARGS[@]}" -machine dumpdtb=test.dtb
 	#QEMU_ARGS+=(-dtb test.dtb)
 	#ARGS+=(--add-file "test.dtb:EFI/Boot/virt.dtb")
-	ARGS+=(--add-file "test.dtb:test.dtb")
+	ARGS+=(--add-file "test.dtb:dtbs/virt/linux-dummy-virt.dtb")
+	ARGS+=(--add-file "mapping.dtb:dtbs/mapping.dtb")
 fi
 
 ARGS+=(
