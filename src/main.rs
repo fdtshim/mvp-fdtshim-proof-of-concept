@@ -67,8 +67,6 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
     let mapping_data = read_file(boot_services, path_for("mapping.dtb")).expect("Could not load mapping.dtb!!");
     info!("mapping.dtb size: {}", mapping_data.len());
     let mapping_fdt = fdt::Fdt::from_ptr(mapping_data.as_ptr()).unwrap();
-    info!("");
-    //info!("{mapping_fdt:?}");
     let mapping_info = mapping_fdt.find_node("/mapping").expect("No /mapping entry...");
     info!("");
     info!("Data in mapping.dtb:");
@@ -85,21 +83,16 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
     info!("EFI_DTB_TABLE at: {addr:?}");
     let fdt = fdt::Fdt::from_ptr(addr as *const u8).unwrap();
 
-    let compatible = fdt.root().expect("").compatible().first().unwrap();
+    let compatible = fdt.root().expect("").compatible();
+    let compatibles: Vec<&str> = compatible.all().collect();
     info!("This is a devicetree representation of a {}", fdt.root().expect("").model());
-    info!("...which is compatible with at least: {}", compatible);
-    info!("...and has {} CPU(s)", fdt.cpus().count());
-    info!(
-        "...and has at least one memory location at: {:#X}\n",
-        fdt.memory().expect("").regions().next().unwrap().starting_address as usize
-    );
+    info!("...which is compatible with at least: {}", compatible.first().unwrap());
 
     let matched_by_fdt = mapping_fdt
-        .find_compatible(&[compatible])
+        .find_compatible(&compatibles)
         .expect("Compatible not found")
         ;
     let dtb_path = matched_by_fdt.property("dtb").unwrap().as_str().unwrap();
-    info!("");
     info!("-----------");
     info!("This device matches DTB path: {}", dtb_path);
     info!("-----------");
@@ -124,28 +117,33 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
 
     let size = dtb.len();
     info!("Loaded dtb binary size: {size}");
-    let _result = // XXX
-        match dt_fixup.fixup(dtb_p, &size, DtFixupFlags::DtApplyFixups) {
-            Ok(result) => {
-                info!("Required buffer size: {size}");
-                result
-            },
-            Err(status) => {
-                match status.status() {
-                    Status::BUFFER_TOO_SMALL => {
-                        // XXX -> should allocate a new buffer, copy, get rid of the old one.
-                        info!("Required buffer size: {size}");
-                        info!("re-trying!");
-                        dt_fixup.fixup(dtb_p, &size, DtFixupFlags::DtApplyFixups)
-                    }
-                    _ => { panic!("Error! {status}") }
-                }
-            }.unwrap(),
+    info!("    checking size required for fixups...");
+    match dt_fixup.fixup(dtb_p, &size, DtFixupFlags::DtApplyFixups) {
+        Ok(_) => {},
+        Err(status) => {
+            match status.status() {
+                Status::BUFFER_TOO_SMALL => {}
+                _ => { panic!("Error attempting to apply EFI_DT_FIXUP_PROTOCOL! {status}") }
+            }
+        },
+    };
+
+    // TODO: here make the proper buffer
+
+    info!("    => Required buffer size: {size}");
+
+    info!("Applying DT Fixups to final ");
+    match dt_fixup.fixup(dtb_p, &size, DtFixupFlags::DtApplyFixups) {
+        Ok(result) => {
+            info!("Succesfully applied fixups.")
         }
-        ;
+        Err(status) => {
+            panic!("Error! {status}")
+        }
+    };
 
-
-    info!("Success???");
+    info!("");
+    info!("[this is the end... stalling for 10s]");
     boot_services.stall(10_000_000);
     uefi::allocator::exit_boot_services(); // XXX
     Status::SUCCESS
