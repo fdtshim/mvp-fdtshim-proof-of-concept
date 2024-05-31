@@ -6,11 +6,7 @@ use crate::protocols::dt_fixup::{DtFixup, DtFixupFlags};
 
 extern crate alloc;
 
-use alloc::vec;
 use alloc::vec::Vec;
-use alloc::string;
-use alloc::string::String;
-use alloc::string::ToString;
 
 extern crate flat_device_tree as fdt;
 use core::ffi::c_void;
@@ -18,10 +14,9 @@ use log::info;
 use uefi::prelude::*;
 use uefi::{guid, Guid};
 use uefi::table::boot::SearchType;
-use uefi::{Identify, Result};
+use uefi::{Identify};
 
 use uefi::CString16;
-use uefi::CStr16;
 use uefi::fs::{FileSystem, FileSystemResult, PathBuf, Path};
 use uefi::proto::media::fs::SimpleFileSystem;
 use uefi::table::boot::ScopedProtocol;
@@ -129,7 +124,7 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
 
     let size = dtb.len();
     info!("Loaded dtb binary size: {size}");
-    let result =
+    let _result = // XXX
         match dt_fixup.fixup(dtb_p, &size, DtFixupFlags::DtApplyFixups) {
             Ok(result) => {
                 info!("Required buffer size: {size}");
