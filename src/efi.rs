@@ -1,3 +1,5 @@
+//! Helpers for standard EFI features.
+
 use core::ffi::c_void;
 use log::debug;
 use uefi::prelude::*;

@@ -9,13 +9,10 @@ mod protocols;
 use crate::protocols::dt_fixup::{DtFixup, DtFixupFlags};
 
 extern crate alloc;
-
-use alloc::vec::Vec;
-
 extern crate flat_device_tree as fdt;
+use alloc::vec::Vec;
 use core::ffi::c_void;
 use log::info;
-use log::set_max_level;
 use uefi::prelude::*;
 use uefi::table::boot::{MemoryType, SearchType};
 use uefi::Identify;
@@ -25,7 +22,7 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
     uefi::helpers::init(&mut system_table).unwrap();
     uefi::allocator::init(&mut system_table);
 
-    set_max_level(log::LevelFilter::Trace);
+    log::set_max_level(log::LevelFilter::Trace);
 
     let boot_services = system_table.boot_services();
 
