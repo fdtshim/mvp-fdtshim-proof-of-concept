@@ -4,6 +4,7 @@ use uefi::{guid, Guid};
 use uefi::{Result, Status, StatusExt};
 
 bitflags::bitflags! {
+    /// Flags that can be given to the EFI_DT_FIXUP_PROTOCOL.
     #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
     #[repr(transparent)]
     pub struct DtFixupFlags: u32 {
@@ -33,6 +34,9 @@ impl DtFixupProtocol {
 }
 
 /// DtFixup protocol
+///
+///  - https://github.com/U-Boot-EFI/EFI_DT_FIXUP_PROTOCOL?tab=readme-ov-file#parameters-1
+///
 #[derive(Debug)]
 #[repr(transparent)]
 #[unsafe_protocol(DtFixupProtocol::GUID)]
