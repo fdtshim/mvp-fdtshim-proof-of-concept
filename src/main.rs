@@ -13,7 +13,7 @@ use core::ffi::c_void;
 use log::info;
 use uefi::prelude::*;
 use uefi::{guid, Guid};
-use uefi::table::boot::SearchType;
+use uefi::table::boot::{SearchType, MemoryType};
 use uefi::{Identify};
 
 use uefi::CString16;
@@ -118,6 +118,7 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
     let size = dtb.len();
     info!("Loaded dtb binary size: {size}");
     info!("    checking size required for fixups...");
+    // NOTE: We're technically applying the fixup here, too, but we only want the `size` value.
     match dt_fixup.fixup(dtb_p, &size, DtFixupFlags::DtApplyFixups) {
         Ok(_) => {},
         Err(status) => {
@@ -127,10 +128,9 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
             }
         },
     };
+    info!("    => Required buffer size: {size}");
 
     // TODO: here make the proper buffer and copy
-
-    info!("    => Required buffer size: {size}");
 
     info!("Applying DT Fixups to new and final FDT");
     match dt_fixup.fixup(dtb_p, &size, DtFixupFlags::DtApplyFixups) {
@@ -141,6 +141,21 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
             panic!("Error! {status}")
         }
     };
+
+    let final_fdt: *const c_void = boot_services
+        .allocate_pool(MemoryType::ACPI_RECLAIM, size)
+        .expect("Failed to allocate ACPI_RECLAIM memory ({size} bytes) for final FDT")
+        as *const c_void
+    ;
+
+    boot_services
+        .install_configuration_table(&EFI_DTB_TABLE_GUID, final_fdt)
+        .expect("Failed to install updated EFI_DT_TABLE!")
+    ;
+
+    info!("");
+    info!("Configuration tables found:");
+    list_configuration_tables(&system_table);
 
     info!("");
     info!("[this is the end... stalling for 10s]");
