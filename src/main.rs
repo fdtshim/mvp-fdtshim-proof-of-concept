@@ -113,7 +113,8 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
         .expect("Failed to install updated EFI_DT_TABLE!");
 
     info!("");
-    info!("[this is the end... stalling for 10s]");
+    info!("NOTE: successfully ran to the end.");
+    info!("Staling for 10s.");
     boot_services.stall(10_000_000);
     uefi::allocator::exit_boot_services();
     Status::SUCCESS
