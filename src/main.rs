@@ -1,9 +1,11 @@
 #![no_main]
 #![no_std]
 
-pub mod utils;
+mod efi;
+use crate::efi::*;
+mod utils;
 use crate::utils::*;
-pub mod protocols;
+mod protocols;
 use crate::protocols::dt_fixup::{DtFixup, DtFixupFlags};
 
 extern crate alloc;
@@ -13,45 +15,17 @@ use alloc::vec::Vec;
 extern crate flat_device_tree as fdt;
 use core::ffi::c_void;
 use log::info;
+use log::set_max_level;
 use uefi::prelude::*;
 use uefi::table::boot::{MemoryType, SearchType};
 use uefi::Identify;
-use uefi::{guid, Guid};
-
-pub const EFI_DTB_TABLE_GUID: Guid = guid!("b1b621d5-f19c-41a5-830b-d9152c69aae0");
-
-fn list_configuration_tables(st: &SystemTable<Boot>) {
-    st.config_table()
-        .iter()
-        .for_each(|config| info!(" - {}", config.guid))
-}
-
-fn get_efi_dtb_table(st: &SystemTable<Boot>) -> *const c_void {
-    st.config_table()
-        .iter()
-        .find(|config| config.guid == EFI_DTB_TABLE_GUID)
-        .map(|config| config.address)
-        .expect("Could not find EFI_DTB_TABLE")
-}
-
-unsafe fn dump_fdt_info(st: &SystemTable<Boot>) {
-    let addr = get_efi_dtb_table(&st);
-    let fdt = fdt::Fdt::from_ptr(addr as *const u8).unwrap();
-    let compatible = fdt.root().expect("").compatible();
-    info!(
-        "This is a devicetree representation of a {}",
-        fdt.root().expect("").model()
-    );
-    info!(
-        "...which is compatible with at least: {}",
-        compatible.first().unwrap()
-    );
-}
 
 #[entry]
 unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     uefi::helpers::init(&mut system_table).unwrap();
     uefi::allocator::init(&mut system_table);
+
+    set_max_level(log::LevelFilter::Trace);
 
     let boot_services = system_table.boot_services();
 
@@ -70,16 +44,11 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
         info!(" - {}", node.name);
     }
 
-    info!("");
-    info!("Configuration tables found:");
-    list_configuration_tables(&system_table);
     info!("Looking for DTB table");
     let addr = get_efi_dtb_table(&system_table);
     info!("");
     info!("EFI_DTB_TABLE at: {addr:?}");
     let fdt = fdt::Fdt::from_ptr(addr as *const u8).unwrap();
-
-    dump_fdt_info(&system_table);
 
     let compatible = fdt.root().expect("").compatible();
     let compatibles: Vec<&str> = compatible.all().collect();
@@ -143,15 +112,8 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
         }
     };
 
-    boot_services
-        .install_configuration_table(&EFI_DTB_TABLE_GUID, final_fdt_p)
+    install_efi_dtb_table(&system_table, final_fdt_p)
         .expect("Failed to install updated EFI_DT_TABLE!");
-
-    info!("");
-    info!("Configuration tables found:");
-    list_configuration_tables(&system_table);
-
-    dump_fdt_info(&system_table);
 
     info!("");
     info!("[this is the end... stalling for 10s]");

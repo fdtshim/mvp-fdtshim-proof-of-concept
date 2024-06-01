@@ -1,4 +1,5 @@
 use core::ffi::c_void;
+use log::debug;
 use uefi::proto::unsafe_protocol;
 use uefi::{guid, Guid};
 use uefi::{Result, Status, StatusExt};
@@ -49,6 +50,7 @@ impl DtFixup {
         buffer_size: *const usize,
         flags: DtFixupFlags,
     ) -> Result {
+        debug!("-> Calling EFI_DT_FIXUP...");
         unsafe { (self.0.fixup)(&mut self.0, fdt, buffer_size, flags.bits()).to_result() }
     }
 }
