@@ -121,6 +121,7 @@ dependencies = [
 name = "uefi-hello-world"
 version = "0.1.0"
 dependencies = [
+ "bitflags",
  "flat_device_tree",
  "log",
  "uefi",
