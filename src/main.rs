@@ -127,7 +127,7 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
     let size = dtb.len();
     info!("Loaded dtb binary size: {size}");
     info!("    checking size required for fixups...");
-    // NOTE: We're technically applying the fixup here, too, but we only want the `size` value.
+    // NOTE: We're technically applying the fixup here, too, but we only want the resulting `size` value.
     match dt_fixup.fixup(dtb_p, &size, DtFixupFlags::DtApplyFixups) {
         Ok(_) => {}
         Err(status) => match status.status() {
@@ -145,8 +145,6 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
     let final_fdt_p = final_fdt as *const c_void;
 
     final_fdt.copy_from(dtb.as_ptr(), dtb.len());
-
-    //dtb.iter().map(|byte| {info!("!{byte}");} );
 
     info!("Applying DT Fixups to new and final FDT");
     match dt_fixup.fixup(final_fdt_p, &size, DtFixupFlags::DtApplyFixups) {
