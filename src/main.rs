@@ -38,6 +38,13 @@ fn get_efi_dtb_table(st: &SystemTable<Boot>) -> *const c_void {
         .expect("Could not find EFI_DTB_TABLE")
 }
 
+unsafe fn dump_fdt_info(st: &SystemTable<Boot>) {
+    let addr = get_efi_dtb_table(&st);
+    let fdt = fdt::Fdt::from_ptr(addr as *const u8).unwrap();
+    let compatible = fdt.root().expect("").compatible();
+    info!("This is a devicetree representation of a {}", fdt.root().expect("").model());
+    info!("...which is compatible with at least: {}", compatible.first().unwrap());
+}
 
 
 // https://docs.rs/uefi/latest/uefi/fs/index.html#use-str-as-path
@@ -83,10 +90,10 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
     info!("EFI_DTB_TABLE at: {addr:?}");
     let fdt = fdt::Fdt::from_ptr(addr as *const u8).unwrap();
 
+    dump_fdt_info(&system_table);
+
     let compatible = fdt.root().expect("").compatible();
     let compatibles: Vec<&str> = compatible.all().collect();
-    info!("This is a devicetree representation of a {}", fdt.root().expect("").model());
-    info!("...which is compatible with at least: {}", compatible.first().unwrap());
 
     let matched_by_fdt = mapping_fdt
         .find_compatible(&compatibles)
@@ -130,10 +137,18 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
     };
     info!("    => Required buffer size: {size}");
 
-    // TODO: here make the proper buffer and copy
+    let final_fdt = boot_services
+        .allocate_pool(MemoryType::ACPI_RECLAIM, size)
+        .expect("Failed to allocate ACPI_RECLAIM memory ({size} bytes) for final FDT")
+    ;
+    let final_fdt_p = final_fdt as *const c_void;
+
+    final_fdt.copy_from(dtb.as_ptr(), dtb.len());
+
+    //dtb.iter().map(|byte| {info!("!{byte}");} );
 
     info!("Applying DT Fixups to new and final FDT");
-    match dt_fixup.fixup(dtb_p, &size, DtFixupFlags::DtApplyFixups) {
+    match dt_fixup.fixup(final_fdt_p, &size, DtFixupFlags::DtApplyFixups) {
         Ok(_) => {
             info!("Succesfully applied fixups.")
         }
@@ -142,20 +157,16 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
         }
     };
 
-    let final_fdt: *const c_void = boot_services
-        .allocate_pool(MemoryType::ACPI_RECLAIM, size)
-        .expect("Failed to allocate ACPI_RECLAIM memory ({size} bytes) for final FDT")
-        as *const c_void
-    ;
-
     boot_services
-        .install_configuration_table(&EFI_DTB_TABLE_GUID, final_fdt)
+        .install_configuration_table(&EFI_DTB_TABLE_GUID, final_fdt_p)
         .expect("Failed to install updated EFI_DT_TABLE!")
     ;
 
     info!("");
     info!("Configuration tables found:");
     list_configuration_tables(&system_table);
+
+    dump_fdt_info(&system_table);
 
     info!("");
     info!("[this is the end... stalling for 10s]");
