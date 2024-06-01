@@ -147,7 +147,11 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
     final_fdt.copy_from(dtb.as_ptr(), dtb.len());
 
     info!("Applying DT Fixups to new and final FDT");
-    match dt_fixup.fixup(final_fdt_p, &size, DtFixupFlags::DtApplyFixups | DtFixupFlags::DtReserveMemory) {
+    match dt_fixup.fixup(
+        final_fdt_p,
+        &size,
+        DtFixupFlags::DtApplyFixups | DtFixupFlags::DtReserveMemory,
+    ) {
         Ok(_) => {
             info!("Succesfully applied fixups.")
         }
