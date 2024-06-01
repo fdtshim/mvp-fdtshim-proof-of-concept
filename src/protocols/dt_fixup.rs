@@ -1,7 +1,7 @@
 use core::ffi::c_void;
+use uefi::proto::unsafe_protocol;
 use uefi::{guid, Guid};
 use uefi::{Result, Status, StatusExt};
-use uefi::proto::unsafe_protocol;
 
 pub enum DtFixupFlags {
     DtApplyFixups = 1,
@@ -41,10 +41,6 @@ impl DtFixup {
         buffer_size: *const usize,
         flags: DtFixupFlags,
     ) -> Result {
-        unsafe {
-            (self.0.fixup)(&mut self.0, fdt, buffer_size, flags as u32)
-                .to_result()
-        }
-
+        unsafe { (self.0.fixup)(&mut self.0, fdt, buffer_size, flags as u32).to_result() }
     }
 }
