@@ -11,15 +11,14 @@ use alloc::vec::Vec;
 extern crate flat_device_tree as fdt;
 use core::ffi::c_void;
 use log::info;
-use uefi::prelude::*;
-use uefi::table::boot::{MemoryType, SearchType};
-use uefi::Identify;
-use uefi::{guid, Guid};
-
 use uefi::fs::{FileSystem, FileSystemResult, Path, PathBuf};
+use uefi::prelude::*;
 use uefi::proto::media::fs::SimpleFileSystem;
 use uefi::table::boot::ScopedProtocol;
+use uefi::table::boot::{MemoryType, SearchType};
 use uefi::CString16;
+use uefi::Identify;
+use uefi::{guid, Guid};
 
 pub const EFI_DTB_TABLE_GUID: Guid = guid!("b1b621d5-f19c-41a5-830b-d9152c69aae0");
 
