@@ -3,6 +3,8 @@
 
 mod efi;
 use crate::efi::*;
+mod matching;
+use crate::matching::*;
 mod utils;
 use crate::utils::*;
 mod protocols;
@@ -10,7 +12,6 @@ use crate::protocols::dt_fixup::{DtFixup, DtFixupFlags};
 
 extern crate alloc;
 extern crate flat_device_tree as fdt;
-use alloc::vec::Vec;
 use core::ffi::c_void;
 use log::info;
 use uefi::prelude::*;
@@ -32,31 +33,7 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
         read_file(boot_services, path_for("mapping.dtb")).expect("Could not load mapping.dtb!!");
     info!("mapping.dtb size: {}", mapping_data.len());
     let mapping_fdt = fdt::Fdt::from_ptr(mapping_data.as_ptr()).unwrap();
-    let mapping_info = mapping_fdt
-        .find_node("/mapping")
-        .expect("No /mapping entry...");
-    info!("");
-    info!("Data in mapping.dtb:");
-    for node in mapping_info.children() {
-        info!(" - {}", node.name);
-    }
-
-    info!("Looking for DTB table");
-    let addr = get_efi_dtb_table(&system_table);
-    info!("");
-    info!("EFI_DTB_TABLE at: {addr:?}");
-    let fdt = fdt::Fdt::from_ptr(addr as *const u8).unwrap();
-
-    let compatible = fdt.root().expect("").compatible();
-    let compatibles: Vec<&str> = compatible.all().collect();
-
-    let matched_by_fdt = mapping_fdt
-        .find_compatible(&compatibles)
-        .expect("Compatible not found");
-    let dtb_path = matched_by_fdt.property("dtb").unwrap().as_str().unwrap();
-    info!("-----------");
-    info!("This device matches DTB path: {}", dtb_path);
-    info!("-----------");
+    let dtb_path = try_matching(&system_table, &mapping_fdt).expect("Could not match device from ambiant data...");
 
     let dtb =
         read_file(boot_services, path_for(dtb_path)).expect("Could not load device-specific dtb!!");
