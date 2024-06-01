@@ -171,6 +171,6 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
     info!("");
     info!("[this is the end... stalling for 10s]");
     boot_services.stall(10_000_000);
-    uefi::allocator::exit_boot_services(); // XXX
+    uefi::allocator::exit_boot_services();
     Status::SUCCESS
 }
