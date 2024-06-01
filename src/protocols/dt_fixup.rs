@@ -3,9 +3,13 @@ use uefi::proto::unsafe_protocol;
 use uefi::{guid, Guid};
 use uefi::{Result, Status, StatusExt};
 
-pub enum DtFixupFlags {
-    DtApplyFixups = 1,
-    DtReserveMemory = 2,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+    #[repr(transparent)]
+    pub struct DtFixupFlags: u32 {
+        const DtApplyFixups = 1;
+        const DtReserveMemory = 2;
+    }
 }
 
 /// EFI_DT_FIXUP_PROTOCOL
@@ -41,6 +45,6 @@ impl DtFixup {
         buffer_size: *const usize,
         flags: DtFixupFlags,
     ) -> Result {
-        unsafe { (self.0.fixup)(&mut self.0, fdt, buffer_size, flags as u32).to_result() }
+        unsafe { (self.0.fixup)(&mut self.0, fdt, buffer_size, flags.bits()).to_result() }
     }
 }
