@@ -128,13 +128,13 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
         },
     };
 
-    // TODO: here make the proper buffer
+    // TODO: here make the proper buffer and copy
 
     info!("    => Required buffer size: {size}");
 
-    info!("Applying DT Fixups to final ");
+    info!("Applying DT Fixups to new and final FDT");
     match dt_fixup.fixup(dtb_p, &size, DtFixupFlags::DtApplyFixups) {
-        Ok(result) => {
+        Ok(_) => {
             info!("Succesfully applied fixups.")
         }
         Err(status) => {
