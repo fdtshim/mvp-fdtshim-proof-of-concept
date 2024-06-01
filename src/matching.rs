@@ -1,5 +1,5 @@
-use alloc::vec::Vec;
 use crate::efi::*;
+use alloc::vec::Vec;
 use flat_device_tree::Fdt;
 use log::debug;
 use log::info;
