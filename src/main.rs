@@ -1,6 +1,8 @@
 #![no_main]
 #![no_std]
 
+pub mod utils;
+use crate::utils::*;
 pub mod protocols;
 use crate::protocols::dt_fixup::{DtFixup, DtFixupFlags};
 
@@ -11,12 +13,8 @@ use alloc::vec::Vec;
 extern crate flat_device_tree as fdt;
 use core::ffi::c_void;
 use log::info;
-use uefi::fs::{FileSystem, FileSystemResult, Path, PathBuf};
 use uefi::prelude::*;
-use uefi::proto::media::fs::SimpleFileSystem;
-use uefi::table::boot::ScopedProtocol;
 use uefi::table::boot::{MemoryType, SearchType};
-use uefi::CString16;
 use uefi::Identify;
 use uefi::{guid, Guid};
 
@@ -48,21 +46,6 @@ unsafe fn dump_fdt_info(st: &SystemTable<Boot>) {
         "...which is compatible with at least: {}",
         compatible.first().unwrap()
     );
-}
-
-// https://docs.rs/uefi/latest/uefi/fs/index.html#use-str-as-path
-fn read_file(bs: &BootServices, path: CString16) -> FileSystemResult<Vec<u8>> {
-    info!("read_file({path})");
-    let fs: ScopedProtocol<SimpleFileSystem> = bs.get_image_file_system(bs.image_handle()).unwrap();
-    let mut fs = FileSystem::new(fs);
-    fs.read(Path::new(&path))
-}
-
-fn path_for(path: &str) -> CString16 {
-    // XXX this would look at the parameter-provided `dtbs` path instead of hardcoded `dtbs`
-    let mut p = PathBuf::from(cstr16!(r"\dtbs"));
-    p.push(PathBuf::from(CString16::try_from(path).unwrap()));
-    p.to_cstr16().into()
 }
 
 #[entry]
