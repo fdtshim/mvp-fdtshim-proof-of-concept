@@ -45,6 +45,7 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
             // Value for the final EFI_DT_TABLE
             let size = 0;
 
+            debug!("Determining required buffer size for the final FDT...");
             // We're using this call to get the appropriate final size of the EFI_DT_TABLE
             match efi_dt_fixup(
                 &system_table,
@@ -63,16 +64,16 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
                     }
                 }
             };
-            debug!("    => Final FDT buffer size: {size}");
+            debug!("    (Final FDT buffer size: {size})");
 
+            // Copy the FDT to its final manually allocated location.
             let final_fdt = boot_services
                 .allocate_pool(MemoryType::ACPI_RECLAIM, size)
                 .expect("Failed to allocate ACPI_RECLAIM memory ({size} bytes) for final FDT");
+            final_fdt.copy_from(dtb.as_ptr(), dtb.len());
             let final_fdt_p = final_fdt as *const c_void;
 
-            final_fdt.copy_from(dtb.as_ptr(), dtb.len());
-
-            debug!("Applying DT Fixups to new and final FDT");
+            debug!("Applying DT Fixups to new and final FDT...");
             match efi_dt_fixup(
                 &system_table,
                 final_fdt_p,
@@ -88,6 +89,7 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
                 }
             };
 
+            debug!("Installing new and final FDT...");
             match install_efi_dtb_table(&system_table, final_fdt_p) {
                 Ok(_) => {
                     info!("Succesfully installed new EFI_DT_TABLE.")
