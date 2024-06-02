@@ -18,7 +18,7 @@ use log::error;
 use log::info;
 use log::warn;
 use uefi::prelude::*;
-use uefi::table::boot::{MemoryType};
+use uefi::table::boot::MemoryType;
 
 #[entry]
 unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
@@ -34,7 +34,8 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
 
     let mapping_data =
         read_file(boot_services, path_for("mapping.dtb")).expect("Could not load mapping.dtb!!");
-    let mapping_fdt = fdt::Fdt::from_ptr(mapping_data.as_ptr()).unwrap();
+    let mapping_fdt =
+        fdt::Fdt::from_ptr(mapping_data.as_ptr()).expect("Coult not parse mapping.dtb!!");
 
     match try_matching(&system_table, &mapping_fdt) {
         // Found a device tree to apply?

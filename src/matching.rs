@@ -24,8 +24,7 @@ pub unsafe fn try_matching<'a>(st: &SystemTable<Boot>, mapping_fdt: &'a Fdt) -> 
             }
             None => None,
         }
-    }
-    else {
+    } else {
         None
     }
 }
