@@ -4,7 +4,6 @@ use flat_device_tree::Fdt;
 use log::debug;
 use log::info;
 use uefi::prelude::*;
-//use uefi::Result;
 
 pub unsafe fn try_matching<'a>(st: &SystemTable<Boot>, mapping_fdt: &'a Fdt) -> Option<&'a str> {
     debug!("-> Attempting to match device from ambiant data...");
