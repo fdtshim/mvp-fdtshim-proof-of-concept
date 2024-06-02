@@ -18,7 +18,7 @@ use log::error;
 use log::info;
 use log::warn;
 use uefi::prelude::*;
-use uefi::table::boot::{MemoryType, SearchType};
+use uefi::table::boot::{MemoryType};
 
 #[entry]
 unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {

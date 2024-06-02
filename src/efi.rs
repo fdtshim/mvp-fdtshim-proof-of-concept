@@ -13,13 +13,12 @@ use uefi::{guid, Guid};
 const EFI_DTB_TABLE_GUID: Guid = guid!("b1b621d5-f19c-41a5-830b-d9152c69aae0");
 
 /// Gets the currently installed FDT.
-pub fn get_efi_dtb_table(st: &SystemTable<Boot>) -> *const c_void {
+pub fn get_efi_dtb_table(st: &SystemTable<Boot>) -> Option<*const c_void> {
     debug!("-> Getting EFI_DTB_TABLE...");
     st.config_table()
         .iter()
         .find(|config| config.guid == EFI_DTB_TABLE_GUID)
         .map(|config| config.address)
-        .expect("Could not find EFI_DTB_TABLE")
 }
 
 /// Installs the given FDT pointer to the configuration tables
