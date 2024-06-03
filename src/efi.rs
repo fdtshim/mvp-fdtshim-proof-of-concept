@@ -48,3 +48,14 @@ pub fn efi_dt_fixup(
 
     dt_fixup.fixup(dtb, buffer_size, flags)
 }
+
+const EFI_SMBIOS3_TABLE_GUID: Guid = guid!("f2fd1544-9794-4a2c-992e-e5bbcf20e394");
+
+/// Gets the currently installed SMBIOS3 table.
+pub fn get_efi_smbios3_table(st: &SystemTable<Boot>) -> Option<*const c_void> {
+    debug!("-> Getting EFI_SMBIOS3_TABLE...");
+    st.config_table()
+        .iter()
+        .find(|config| config.guid == EFI_SMBIOS3_TABLE_GUID)
+        .map(|config| config.address)
+}
