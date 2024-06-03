@@ -4,6 +4,7 @@
 mod efi;
 mod matching;
 mod protocols;
+mod smbios;
 mod utils;
 use crate::efi::*;
 use crate::matching::*;
