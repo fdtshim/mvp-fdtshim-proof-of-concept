@@ -45,7 +45,7 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
             let dtb = read_file(boot_services, path_for(dtb_path))
                 .expect("Could not load device-specific dtb!!");
             // Value for the final EFI_DT_TABLE
-            let size = 0;
+            let size = dtb.len();
 
             debug!("Determining required buffer size for the final FDT...");
             // We're using this call to get the appropriate final size of the EFI_DT_TABLE
