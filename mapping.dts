@@ -121,6 +121,10 @@
 			dtb = "virt/linux-dummy-virt.dtb";
 			compatible = "linux,dummy-virt";
 			// TODO: dmi-match
+			dmi-match {
+				svn = "QEMU";
+				pn = "QEMU Virtual Machine";
+			};
 		};
 	};
 };
