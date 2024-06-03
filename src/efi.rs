@@ -4,6 +4,7 @@ use crate::protocols::dt_fixup::DtFixup;
 use crate::protocols::dt_fixup::DtFixupFlags;
 use core::ffi::c_void;
 use log::debug;
+use log::warn;
 use uefi::prelude::*;
 use uefi::table::boot::SearchType;
 use uefi::Identify;
@@ -37,16 +38,19 @@ pub fn efi_dt_fixup(
 ) -> Result {
     debug!("-> Calling the EFI_DT_FIXUP_PROTOCOL...");
     let boot_services = st.boot_services();
-    let dt_fixup_handle = *boot_services
-        .locate_handle_buffer(SearchType::ByProtocol(&DtFixup::GUID))
-        .expect("EFI_DT_FIXUP_PROTOCOL is missing")
-        .first()
-        .unwrap();
-    let mut dt_fixup = boot_services
-        .open_protocol_exclusive::<DtFixup>(dt_fixup_handle)
-        .expect("EFI_DT_FIXUP_PROTOCOL could not be opened");
+    if let Ok(dt_fixup_handles) =
+        boot_services.locate_handle_buffer(SearchType::ByProtocol(&DtFixup::GUID))
+    {
+        let dt_fixup_handle = *dt_fixup_handles.first().unwrap();
+        let mut dt_fixup = boot_services
+            .open_protocol_exclusive::<DtFixup>(dt_fixup_handle)
+            .expect("EFI_DT_FIXUP_PROTOCOL could not be opened");
 
-    dt_fixup.fixup(dtb, buffer_size, flags)
+        dt_fixup.fixup(dtb, buffer_size, flags)
+    } else {
+        warn!("No EFI_DT_FIXUP_PROTOCOL. This may not be an issue.");
+        Ok(())
+    }
 }
 
 const EFI_SMBIOS3_TABLE_GUID: Guid = guid!("f2fd1544-9794-4a2c-992e-e5bbcf20e394");
