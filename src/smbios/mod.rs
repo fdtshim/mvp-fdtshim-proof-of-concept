@@ -64,7 +64,7 @@ impl<'a> SMBiosTable<'a> {
         strings.push(""); // index 0 is not a real string...
 
         // "Work" pointer
-        let start = data.as_ptr() as *const u8;
+        let start = data.as_ptr();
 
         // We first skip the structured data
         let strings_section: *const c_char =
@@ -108,6 +108,8 @@ impl<'a> SMBiosTable<'a> {
         })
     }
 
+    /// # Safety
+    /// ¯\_(ツ)_/¯
     pub unsafe fn from_ptr(ptr: *const u8) -> Result<Self> {
         if ptr.is_null() {
             return Err(Error::new(Status::ABORTED, ()));
@@ -135,7 +137,7 @@ impl<'a> SMBios3<'a> {
         unsafe {
             let mut ptr = entry_point.struct_table_address;
             loop {
-                let table = SMBiosTable::from_ptr(ptr as *const u8).unwrap();
+                let table = SMBiosTable::from_ptr(ptr).unwrap();
                 if table.header.r#type == Type127::TYPE {
                     break;
                 }
@@ -151,6 +153,8 @@ impl<'a> SMBios3<'a> {
         })
     }
 
+    /// # Safety
+    /// ¯\_(ツ)_/¯
     pub unsafe fn from_ptr(ptr: *const u8) -> Result<Self> {
         if ptr.is_null() {
             return Err(Error::new(Status::ABORTED, ()));
