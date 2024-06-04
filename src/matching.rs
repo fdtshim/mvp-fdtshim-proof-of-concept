@@ -12,7 +12,7 @@ pub unsafe fn try_matching<'a>(st: &SystemTable<Boot>, mapping_fdt: &'a Fdt) -> 
     debug!("-> Attempting to match device from ambiant data...");
 
     // An ambiant FDT compatible match is always preferred.
-    if let Some(fdt) = get_efi_dtb_table(&st) {
+    if let Some(fdt) = get_efi_dtb_table(st) {
         let ambiant_fdt = fdt::Fdt::from_ptr(fdt as *const u8).unwrap();
 
         let compatible = ambiant_fdt.root().expect("").compatible();
@@ -31,7 +31,7 @@ pub unsafe fn try_matching<'a>(st: &SystemTable<Boot>, mapping_fdt: &'a Fdt) -> 
     }
 
     // Falling back to DMI data
-    if let Some(smbios) = get_efi_smbios3_table(&st) {
+    if let Some(smbios) = get_efi_smbios3_table(st) {
         let smbios = SMBios3::from_ptr(smbios as *const u8).unwrap();
 
         //
