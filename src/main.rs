@@ -107,8 +107,23 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
         }
     };
 
+    info!("");
+    info!("");
+    info!("Final state:");
+    if let Some(fdt) = get_efi_dtb_table(&system_table) {
+        let ambiant_fdt = fdt::Fdt::from_ptr(fdt as *const u8).unwrap();
+        let compatible = ambiant_fdt.root().expect("").compatible().first().unwrap();
+        let model = ambiant_fdt.root().expect("").model();
+        info!("Ambiant FDT: compatible = {compatible:?};");
+        info!("                  model = {model:?};");
+    }
+    else {
+        info!("No ambiant FDT. (This may not be a problem.)");
+    }
+    info!("");
+    info!("");
+
     info!("NOTE: fdtshim.efi ran likely successfully to the end.");
-    info!("Stalling for 10s.");
-    boot_services.stall(10_000_000);
+
     Status::SUCCESS
 }
