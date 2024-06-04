@@ -252,7 +252,7 @@ pub struct Type01 {
     pub product_name: SMBiosTableStringRef,
     pub version: SMBiosTableStringRef,
     pub serial_number: SMBiosTableStringRef,
-    pub UUID: [u8; 16],
+    pub uuid: [u8; 16],
     pub wakeup_type: u8,
     pub sku_number: SMBiosTableStringRef,
     pub family: SMBiosTableStringRef,
