@@ -116,8 +116,7 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
         let model = ambiant_fdt.root().expect("").model();
         info!("Ambiant FDT: compatible = {compatible:?};");
         info!("                  model = {model:?};");
-    }
-    else {
+    } else {
         info!("No ambiant FDT. (This may not be a problem.)");
     }
     info!("");
