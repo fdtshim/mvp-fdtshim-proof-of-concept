@@ -80,16 +80,16 @@ pub unsafe fn try_matching<'a>(st: &SystemTable<Boot>, mapping_fdt: &'a Fdt) -> 
 
         if let Some(mappings) = mapping_fdt.find_node("/mapping") {
             for device in mappings.children() {
-                info!("-- {:?}", device.name);
+                debug!("-- {:?}", device.name);
                 if let Some(dmi_match) = device.children().find(|node| node.name == "dmi-match") {
                     let mut valid = true;
                     for field in dmi_match.properties() {
-                        info!("---- {:?}", field.name);
-                        info!("     {:?}", field.as_str());
+                        debug!("---- {:?}", field.name);
+                        debug!("     {:?}", field.as_str());
                         if let Some(value) = dmi.get(field.name) {
-                            info!("     {:?}", value);
+                            debug!("     {:?}", value);
                             if *value != field.as_str().unwrap_or("<invalid>") {
-                                info!("       DID NOT MATCH!");
+                                debug!("       DID NOT MATCH!");
                                 valid = false;
                                 break;
                             }
@@ -97,8 +97,8 @@ pub unsafe fn try_matching<'a>(st: &SystemTable<Boot>, mapping_fdt: &'a Fdt) -> 
                     }
                     if valid {
                         let dtb_path = device.property("dtb").unwrap().as_str().unwrap();
-                        info!("Found a `dmi-match`-based match:");
-                        info!("    This device matches DTB path: {}", dtb_path);
+                        debug!("Found a `dmi-match`-based match:");
+                        debug!("    This device matches DTB path: {}", dtb_path);
 
                         return Some(dtb_path);
                     }
