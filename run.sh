@@ -31,11 +31,19 @@ QEMU_ARGS=(
 )
 
 if [[ $RUST_TARGET == "aarch64-unknown-uefi" ]]; then
-	QEMU_ARGS+=(-cpu cortex-a57)
+	# Going "simpler" takes less time to boot than `max`.
+	QEMU_ARGS+=(-cpu cortex-a53)
+	QEMU_ARGS+=(-m 2G)
 	QEMU_ARGS+=(-machine virt)
+	QEMU_ARGS+=(-netdev user,id=net_id)
+	QEMU_ARGS+=(-device driver=virtio-net,netdev=net_id)
+	#QEMU_ARGS+=(-display gtk,gl=on)
+	#QEMU_ARGS+=(-device virtio-gpu-pci)
 	# Dumping the dtb
 	qemu-system-aarch64 "${QEMU_ARGS[@]}" -machine dumpdtb=test.dtb
 	fdtput test.dtb --type s / model "SUCCESSFUL TEST virtual system"
+	# This pair of node **from the dtb dumped by qemu** will crash the kernel.
+	fdtput test.dtb --remove /gpio-keys /pl061@9030000
 	#QEMU_ARGS+=(-dtb test.dtb)
 	#ARGS+=(--add-file "test.dtb:EFI/Boot/virt.dtb")
 	ARGS+=(--add-file "test.dtb:dtbs/virt/linux-dummy-virt.dtb")
