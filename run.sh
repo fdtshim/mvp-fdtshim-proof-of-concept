@@ -27,6 +27,7 @@ QEMU_ARGS=(
 	#-serial stdio
 	-m 512M
 	-nographic # CTRL+A then X to quit
+	"$@"
 )
 
 if [[ $RUST_TARGET == "aarch64-unknown-uefi" ]]; then
