@@ -75,42 +75,6 @@
 			dtb = "rockchip/rk3399-roc-pc.dtb";
 			compatible = "firefly,roc-rk3399-pc";
 		};
-
-		// XXX: fictitious match on my non-DT computer to roleplay.
-		amd@ryzen-starbook-b6-a {
-			dmi-match {
-				// Any of the MODALIAS fields can be found here.
-				// TODO: Add "matching" support (e.g. wildcards)
-				// NOTE: matching on bios properties is recommended against.
-				// Matching the chassis, board and product name is recommended.
-				// These matches can be changed later down the line, as they
-				// are not built with the shim, but part of metadata intended
-				// to be built alongside the kernel dtb.
-				// Casting too-wide a net on DMI matches is not a big problem...
-
-				// Best discriminator for Mk.VI AMD
-				svn = "StarLabs"; // System vendor
-				pn  = "StarBook"; // Product name
-				sku = "B6-A";     // Represents Starbook Mk.VI, with AMD
-				
-				// Redundant
-				// rvn = "StarLabs"; // Board vendor
-				// rn  = "StarBook"; // Board name
-
-				// Unlikely to be a useful match
-				// rvr = "Version1.0";
-				// pvr = "Version1.0";
-				// efr = "2.0";
-				// Also the vendor provides AMI and EDKII builds.
-				// bvn = "AmericanMegatrendsInternational,LLC.";
-				// bvr = "1.7.0";
-				// bd  = "04/13/2023";
-				// br  = "1.7";
-				// cvn = "Defaultstring";
-				// ct  = "10";
-				// cvr = "Defaultstring";
-			};
-		};
 	};
 };
 
@@ -120,7 +84,6 @@
 		virt@linux-dummy-virt {
 			dtb = "virt/linux-dummy-virt.dtb";
 			compatible = "linux,dummy-virt";
-			// TODO: dmi-match
 			dmi-match {
 				svn = "QEMU";
 				pn = "QEMU Virtual Machine";
