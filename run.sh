@@ -19,8 +19,8 @@ BIOS="${BIOS:-"${OVMF}/OVMF.fd"}"
 
 ARGS=(
 	--bios-path="${BIOS}"
-	--boot "target/${RUST_TARGET}/debug/uefi-hello-world.efi"
-	--add-file "target/${RUST_TARGET}/debug/uefi-hello-world.efi:EFI/Boot/BootAA64.efi"
+	--boot "target/${RUST_TARGET}/debug/fdtshim.efi"
+	--add-file "target/${RUST_TARGET}/debug/fdtshim.efi:EFI/Boot/BootAA64.efi"
 	--qemu-path "$qemu"
 )
 QEMU_ARGS=(
