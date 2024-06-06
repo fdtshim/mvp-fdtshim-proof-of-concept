@@ -44,10 +44,8 @@ if [[ $RUST_TARGET == "aarch64-unknown-uefi" ]]; then
 	fdtput test.dtb --type s / model "SUCCESSFUL TEST virtual system"
 	# This pair of node **from the dtb dumped by qemu** will crash the kernel.
 	fdtput test.dtb --remove /gpio-keys /pl061@9030000
-	#QEMU_ARGS+=(-dtb test.dtb)
-	#ARGS+=(--add-file "test.dtb:EFI/Boot/virt.dtb")
-	ARGS+=(--add-file "test.dtb:dtbs/virt/linux-dummy-virt.dtb")
-	ARGS+=(--add-file "mapping.dtb:dtbs/mapping.dtb")
+	ARGS+=(--add-file "test.dtb:EFI/dtbs/virt/linux-dummy-virt.dtb")
+	ARGS+=(--add-file "mapping.dtb:EFI/dtbs/mapping.dtb")
 fi
 
 ARGS+=(
