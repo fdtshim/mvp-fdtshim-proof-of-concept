@@ -1,5 +1,7 @@
 //! Higher-level order helpers
 
+use crate::PREFIX;
+
 use alloc::vec::Vec;
 use log::debug;
 use uefi::fs::{FileSystem, FileSystemResult, Path, PathBuf};
@@ -16,9 +18,9 @@ pub fn read_file(bs: &BootServices, path: CString16) -> FileSystemResult<Vec<u8>
     fs.read(Path::new(&path))
 }
 
+// TODO: generic "join" with vec input?
 pub fn path_for(path: &str) -> CString16 {
-    // TODO: use a global path var for dtbs to load...
-    let mut p = PathBuf::from(cstr16!(r"\dtbs"));
+    let mut p = PathBuf::from(CString16::try_from(PREFIX).unwrap());
     p.push(PathBuf::from(CString16::try_from(path).unwrap()));
     p.to_cstr16().into()
 }
