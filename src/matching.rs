@@ -47,37 +47,38 @@ pub unsafe fn try_matching<'a>(st: &SystemTable<Boot>, mapping_fdt: &'a Fdt) -> 
         dmi.insert("product_sku", "");
         dmi.insert("product_family", "");
         if let Some(system_information) = smbios.get_system_information() {
-            let table = smbios.get_table(1).unwrap();
-            dmi.insert(
-                "sys_vendor",
-                table
-                    .get_string(system_information.sys_vendor)
-                    .unwrap_or(""),
-            );
-            dmi.insert(
-                "product_name",
-                table
-                    .get_string(system_information.product_name)
-                    .unwrap_or(""),
-            );
-            dmi.insert(
-                "product_version",
-                table
-                    .get_string(system_information.product_version)
-                    .unwrap_or(""),
-            );
-            dmi.insert(
-                "product_sku",
-                table
-                    .get_string(system_information.product_sku)
-                    .unwrap_or(""),
-            );
-            dmi.insert(
-                "product_family",
-                table
-                    .get_string(system_information.product_family)
-                    .unwrap_or(""),
-            );
+            if let Some(table) = smbios.get_table(1) {
+                dmi.insert(
+                    "sys_vendor",
+                    table
+                        .get_string(system_information.sys_vendor)
+                        .unwrap_or(""),
+                );
+                dmi.insert(
+                    "product_name",
+                    table
+                        .get_string(system_information.product_name)
+                        .unwrap_or(""),
+                );
+                dmi.insert(
+                    "product_version",
+                    table
+                        .get_string(system_information.product_version)
+                        .unwrap_or(""),
+                );
+                dmi.insert(
+                    "product_sku",
+                    table
+                        .get_string(system_information.product_sku)
+                        .unwrap_or(""),
+                );
+                dmi.insert(
+                    "product_family",
+                    table
+                        .get_string(system_information.product_family)
+                        .unwrap_or(""),
+                );
+            }
         }
 
         // Type02 data
@@ -85,43 +86,47 @@ pub unsafe fn try_matching<'a>(st: &SystemTable<Boot>, mapping_fdt: &'a Fdt) -> 
         dmi.insert("board_name", "");
         dmi.insert("board_version", "");
         if let Some(board_information) = smbios.get_board_information() {
-            let table = smbios.get_table(2).unwrap();
-            dmi.insert(
-                "board_vendor",
-                table
-                    .get_string(board_information.board_vendor)
-                    .unwrap_or(""),
-            );
-            dmi.insert(
-                "board_name",
-                table.get_string(board_information.board_name).unwrap_or(""),
-            );
-            dmi.insert(
-                "board_version",
-                table
-                    .get_string(board_information.board_version)
-                    .unwrap_or(""),
-            );
+            if let Some(table) = smbios.get_table(2) {
+                dmi.insert(
+                    "board_vendor",
+                    table
+                        .get_string(board_information.board_vendor)
+                        .unwrap_or(""),
+                );
+                dmi.insert(
+                    "board_name",
+                    table.get_string(board_information.board_name).unwrap_or(""),
+                );
+                dmi.insert(
+                    "board_version",
+                    table
+                        .get_string(board_information.board_version)
+                        .unwrap_or(""),
+                );
+            }
         }
 
         // Type03 data
         dmi.insert("chassis_vendor", "");
         dmi.insert("chassis_version", "");
         if let Some(chassis_information) = smbios.get_chassis_information() {
-            let table = smbios.get_table(3).unwrap();
-            dmi.insert(
-                "chassis_vendor",
-                table
-                    .get_string(chassis_information.chassis_vendor)
-                    .unwrap_or(""),
-            );
-            dmi.insert(
-                "chassis_version",
-                table
-                    .get_string(chassis_information.chassis_version)
-                    .unwrap_or(""),
-            );
+            if let Some(table) = smbios.get_table(3) {
+                dmi.insert(
+                    "chassis_vendor",
+                    table
+                        .get_string(chassis_information.chassis_vendor)
+                        .unwrap_or(""),
+                );
+                dmi.insert(
+                    "chassis_version",
+                    table
+                        .get_string(chassis_information.chassis_version)
+                        .unwrap_or(""),
+                );
+            }
         }
+
+        debug!("DMI information to check:\n{:?}", dmi);
 
         //
         // Then, loop on all nodes with `dmi-match`, and if **all** fields of the node match
