@@ -16,52 +16,21 @@
 			dmi-match {
 				// All of those entries would be good matches
 				// The two first ones would be preferred and sufficient.
-				svn = "PINE64";       // System vendor
-				pn  = "PinebookPro";  // Product name
-				// rvn = "PINE64";       // Board vendor
-				// rn  = "PinebookPro";  // Board name
-				// cvn = "PINE64";       // Chassis vendor
+				sys_vendor = "PINE64";
+				product_name = "PinebookPro";
 
-				// Different BIOS vendors. Not a good match
-				// bvn = "Tow-Boot";
-				// bvr = "Tow-Boot2023.07007-rc4-pre[variantspi]";
-				// bd  = "07/01/2023";
-				// br  = "23.7";
-				// Chassis type will rarely be good
-				// ct  = "9";
-				// Empty/Missing entries, not good matches
-				// pvr = "";
-				// rvr = "";
-				// cvr = "";
-				// sku = "";
 			};
 		};
 		allwinner@sun50i-a64-pinebook {
 			dtb = "allwinner/sun50i-a64-pinebook.dtb";
 			// compatible = "pine64,pinebook"; // Commented-out for testing
 			dmi-match {
-				svn = "PINE64";
-				pn  = "Pinebook" // Vendor naming scheme
+				sys_vendor = "PINE64";
+				// XXX multiple fields matching not supported yet!
+				product_name = "Pinebook" // Vendor naming scheme
 					, "Pinebook(A64)" // Tow-Boot naming scheme
 				;
 			};
-			// Tow-Boot builds
-			//dmi-match {
-			//	svn = "PINE64";
-			//	pn  = "Pinebook(A64)";
-			//	//rvn = "PINE64";
-			//	//rn  = "Pinebook(A64)";
-			//	//cvn = "PINE64";
-			//	//ct  = "9";
-			//	//bvn = "Tow-Boot";
-			//	//bvr = "Tow-Boot2023.07007-rc4-pre[variantmmcboot]";
-			//	//bd  = "07/01/2023";
-			//	//br  = "23.7";
-			//	//cvr = "";
-			//	//sku = "";
-			//	//pvr = "";
-			//	//rvr = "";
-			//};
 		};
 		rockchip@rk3399-roc-pc-mezzanine {
 			// While it's not the case, if it also had `firefly,roc-rk3399-pc`
@@ -85,8 +54,8 @@
 			dtb = "virt/linux-dummy-virt.dtb";
 			compatible = "linux,dummy-virt";
 			dmi-match {
-				svn = "QEMU";
-				pn = "QEMU Virtual Machine";
+				system_vendor = "QEMU";
+				product_name = "QEMU Virtual Machine";
 			};
 		};
 	};
