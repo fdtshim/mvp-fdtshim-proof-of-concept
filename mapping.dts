@@ -25,7 +25,9 @@
 			dtb = "allwinner/sun50i-a64-pinebook.dtb";
 			// compatible = "pine64,pinebook"; // Commented-out for testing
 			dmi-match {
-				sys_vendor = "PINE64";
+				// To further test multiple fields matching
+				// Not the actual expected usage.
+				sys_vendor = "Pine Microsystems", "Pine64", "PINE64";
 				// XXX multiple fields matching not supported yet!
 				product_name = "Pinebook" // Vendor naming scheme
 					, "Pinebook(A64)" // Tow-Boot naming scheme
@@ -54,7 +56,7 @@
 			dtb = "virt/linux-dummy-virt.dtb";
 			compatible = "linux,dummy-virt";
 			dmi-match {
-				sys_vendor = "QEMU";
+				sys_vendor = "Bogus Test Value", "QEMU";
 				product_name = "QEMU Virtual Machine";
 				/*
 				board_name = "";
