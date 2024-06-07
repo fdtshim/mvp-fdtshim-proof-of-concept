@@ -38,40 +38,90 @@ pub unsafe fn try_matching<'a>(st: &SystemTable<Boot>, mapping_fdt: &'a Fdt) -> 
         // First, we collate data to compare against in a map.
         //
 
-        // FIXME: re-check mapping between modalias names and DMI information.
-        // TODO: Add other fields as needed.
         let mut dmi: BTreeMap<&str, &str> = BTreeMap::new();
-        dmi.insert("svn", "");
-        dmi.insert("pn", "");
-        dmi.insert("sku", "");
+
+        // Type01 data
+        dmi.insert("sys_vendor", "");
+        dmi.insert("product_name", "");
+        dmi.insert("product_version", "");
+        dmi.insert("product_sku", "");
+        dmi.insert("product_family", "");
         if let Some(system_information) = smbios.get_system_information() {
             let table = smbios.get_table(1).unwrap();
             dmi.insert(
-                "svn",
+                "sys_vendor",
                 table
-                    .get_string(system_information.manufacturer)
+                    .get_string(system_information.sys_vendor)
                     .unwrap_or(""),
             );
             dmi.insert(
-                "pn",
+                "product_name",
                 table
                     .get_string(system_information.product_name)
                     .unwrap_or(""),
             );
             dmi.insert(
-                "sku",
+                "product_version",
                 table
-                    .get_string(system_information.sku_number)
+                    .get_string(system_information.product_version)
+                    .unwrap_or(""),
+            );
+            dmi.insert(
+                "product_sku",
+                table
+                    .get_string(system_information.product_sku)
+                    .unwrap_or(""),
+            );
+            dmi.insert(
+                "product_family",
+                table
+                    .get_string(system_information.product_family)
                     .unwrap_or(""),
             );
         }
 
-        // XXX Is this correct?
-        //dmi.insert("rvn", "");
-        //if let Some(enclosure_information) = smbios.get_enclosure_information() {
-        //    let table = smbios.get_table(3).unwrap();
-        //    dmi.insert("rvn", table.get_string(enclosure_information.manufacturer).unwrap());
-        //}
+        // Type02 data
+        dmi.insert("board_vendor", "");
+        dmi.insert("board_name", "");
+        dmi.insert("board_version", "");
+        if let Some(board_information) = smbios.get_board_information() {
+            let table = smbios.get_table(2).unwrap();
+            dmi.insert(
+                "board_vendor",
+                table
+                    .get_string(board_information.board_vendor)
+                    .unwrap_or(""),
+            );
+            dmi.insert(
+                "board_name",
+                table.get_string(board_information.board_name).unwrap_or(""),
+            );
+            dmi.insert(
+                "board_version",
+                table
+                    .get_string(board_information.board_version)
+                    .unwrap_or(""),
+            );
+        }
+
+        // Type03 data
+        dmi.insert("chassis_vendor", "");
+        dmi.insert("chassis_version", "");
+        if let Some(chassis_information) = smbios.get_chassis_information() {
+            let table = smbios.get_table(3).unwrap();
+            dmi.insert(
+                "chassis_vendor",
+                table
+                    .get_string(chassis_information.chassis_vendor)
+                    .unwrap_or(""),
+            );
+            dmi.insert(
+                "chassis_version",
+                table
+                    .get_string(chassis_information.chassis_version)
+                    .unwrap_or(""),
+            );
+        }
 
         //
         // Then, loop on all nodes with `dmi-match`, and if **all** fields of the node match
