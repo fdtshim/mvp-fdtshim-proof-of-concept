@@ -140,10 +140,14 @@ pub unsafe fn try_matching<'a>(st: &SystemTable<Boot>, mapping_fdt: &'a Fdt) -> 
                     let mut valid = true;
                     for field in dmi_match.properties() {
                         debug!("---- {:?}", field.name);
-                        debug!("     {:?}", field.as_str());
-                        if let Some(value) = dmi.get(field.name) {
-                            debug!("     {:?}", value);
-                            if *value != field.as_str().unwrap_or("<invalid>") {
+                        debug!("     MAP: {:?}", field.as_str().unwrap_or("<invalid>"));
+                        // Print all values of the prop
+                        if let Some(dmi_value) = dmi.get(field.name) {
+                            debug!("     DMI: {:?}", dmi_value);
+                            if field.iter_str().all(|map_value| {
+                                debug!("     MAP: {:?}", map_value);
+                                *dmi_value != map_value
+                            }) {
                                 debug!("       DID NOT MATCH!");
                                 valid = false;
                                 break;
@@ -152,8 +156,10 @@ pub unsafe fn try_matching<'a>(st: &SystemTable<Boot>, mapping_fdt: &'a Fdt) -> 
                     }
                     if valid {
                         let dtb_path = device.property("dtb").unwrap().as_str().unwrap();
+                        debug!("");
                         debug!("Found a `dmi-match`-based match:");
                         debug!("    This device matches DTB path: {}", dtb_path);
+                        debug!("");
 
                         return Some(dtb_path);
                     }
