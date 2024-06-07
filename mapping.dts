@@ -54,8 +54,20 @@
 			dtb = "virt/linux-dummy-virt.dtb";
 			compatible = "linux,dummy-virt";
 			dmi-match {
-				system_vendor = "QEMU";
+				sys_vendor = "QEMU";
 				product_name = "QEMU Virtual Machine";
+				/*
+				board_name = "";
+				board_vendor = "";
+				board_version = "";
+				chassis_vendor = "QEMU";
+				chassis_version = "";
+				product_family = "";
+				product_name = "QEMU Virtual Machine";
+				product_sku = "";
+				product_version = "virt-8.2";
+				sys_vendor = "QEMU";
+				*/
 			};
 		};
 	};
