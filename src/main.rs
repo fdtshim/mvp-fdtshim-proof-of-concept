@@ -32,6 +32,7 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
     uefi::allocator::init(&mut system_table);
 
     log::set_max_level(log::LevelFilter::Info);
+    log::set_max_level(log::LevelFilter::Debug);
 
     let boot_services = system_table.boot_services();
 
@@ -136,10 +137,16 @@ unsafe fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> St
         error!("Could not read {:?}.", path_for(MAPPING).to_string())
     }
 
-    // XXX loadImage and exec into /EFI/boot/grub.efi for POC
+    if log::max_level() == log::LevelFilter::Debug {
+        info!("[for debugging] Stalling for 10s.");
+        boot_services.stall(10_000_000);
+    }
+
+    // TODO: `exec` into next param and its parameters...
+    let ret = exec(boot_services, cstr16!(r"\EFI\boot\grub.efi").into());
 
     info!("Stalling for 10s.");
     boot_services.stall(10_000_000);
 
-    Status::SUCCESS
+    ret
 }
