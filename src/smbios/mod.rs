@@ -210,7 +210,24 @@ impl<'a> SMBios3<'a> {
         }
     }
 
-    pub fn get_enclosure_information(&self) -> Option<&Type03> {
+    pub fn get_board_information(&self) -> Option<&Type02> {
+        if let Some(table) = self.tables.get(&1) {
+            unsafe {
+                let table_data = core::slice::from_raw_parts(
+                    table
+                        .data
+                        .as_ptr()
+                        .byte_add(core::mem::size_of::<SMBiosTableHeader>()),
+                    core::mem::size_of::<Type02>(),
+                );
+                Some(read::<Type02>(table_data))
+            }
+        } else {
+            None
+        }
+    }
+
+    pub fn get_chassis_information(&self) -> Option<&Type03> {
         if let Some(table) = self.tables.get(&1) {
             unsafe {
                 let table_data = core::slice::from_raw_parts(
@@ -229,20 +246,28 @@ impl<'a> SMBios3<'a> {
 }
 
 /// BIOS Information
+///
+/// Notable fields named as in /sys/class/dmi/id/
+///
+/// See also:
+///
+///  - Linux: `drivers/firmware/dmi-id.c`
+///  - Linux: `drivers/firmware/dmi_scan.c`
+///
 #[repr(C, packed(1))]
 pub struct Type00 {
-    pub vendor: SMBiosTableStringRef,
-    pub bios_ver: SMBiosTableStringRef,
+    pub bios_vendor: SMBiosTableStringRef,  // DMI_BIOS_VENDOR
+    pub bios_version: SMBiosTableStringRef, // DMI_BIOS_VERSION
     pub bios_start_segment: u16,
-    pub bios_release_date: SMBiosTableStringRef,
+    pub bios_date: SMBiosTableStringRef, // DMI_BIOS_DATE
     pub bios_rom_size: u8,
     pub bios_characteristics: [u8; 8],
     pub bios_characteristics_ext1: u8,
     pub bios_characteristics_ext2: u8,
-    pub bios_major_release: u8,
-    pub bios_minor_release: u8,
-    pub ec_major_release: u8,
-    pub ec_minor_release: u8,
+    pub bios_release_major: u8,        // DMI_BIOS_RELEASE
+    pub bios_release_minor: u8,        // DMI_BIOS_RELEASE
+    pub ec_firmware_release_major: u8, // DMI_EC_FIRMWARE_RELEASE
+    pub ec_firmware_release_minor: u8, // DMI_EC_FIRMWARE_RELEASE
 }
 unsafe impl Pod for Type00 {}
 impl Type00 {
@@ -250,33 +275,67 @@ impl Type00 {
 }
 
 /// System Information
+///
+/// Notable fields named as in /sys/class/dmi/id/
+///
+/// See also:
+///
+///  - Linux: `drivers/firmware/dmi-id.c`
+///  - Linux: `drivers/firmware/dmi_scan.c`
+///
 #[repr(C, packed(1))]
 pub struct Type01 {
-    pub manufacturer: SMBiosTableStringRef,
-    pub product_name: SMBiosTableStringRef,
-    pub version: SMBiosTableStringRef,
-    pub serial_number: SMBiosTableStringRef,
-    pub uuid: [u8; 16],
+    pub sys_vendor: SMBiosTableStringRef,      // DMI_SYS_VENDOR
+    pub product_name: SMBiosTableStringRef,    // DMI_PRODUCT_NAME
+    pub product_version: SMBiosTableStringRef, // DMI_PRODUCT_VERSION
+    pub product_serial: SMBiosTableStringRef,  // DMI_PRODUCT_SERIAL
+    pub product_uuid: [u8; 16],                // DMI_PRODUCT_UUID
     pub wakeup_type: u8,
-    pub sku_number: SMBiosTableStringRef,
-    pub family: SMBiosTableStringRef,
+    pub product_sku: SMBiosTableStringRef,    // DMI_PRODUCT_SKU
+    pub product_family: SMBiosTableStringRef, // DMI_PRODUCT_FAMILY
 }
 unsafe impl Pod for Type01 {}
 impl Type01 {
     pub const TYPE: u8 = 1;
 }
 
+/// Base board information
+///
+/// Notable fields named as in /sys/class/dmi/id/
+///
+/// See also:
+///
+///  - Linux: `drivers/firmware/dmi-id.c`
+///  - Linux: `drivers/firmware/dmi_scan.c`
+///
+pub struct Type02 {
+    pub board_vendor: SMBiosTableStringRef,    // DMI_BOARD_VENDOR
+    pub board_name: SMBiosTableStringRef,      // DMI_BOARD_NAME
+    pub board_version: SMBiosTableStringRef,   // DMI_BOARD_VERSION
+    pub board_serial: SMBiosTableStringRef,    // DMI_BOARD_SERIAL
+    pub board_asset_tag: SMBiosTableStringRef, // DMI_BOARD_ASSET_TAG
+}
+unsafe impl Pod for Type02 {}
+impl Type02 {
+    pub const TYPE: u8 = 2;
+}
+
 /// System Information
+///
+/// Notable fields named as in /sys/class/dmi/id/
+///
+/// See also:
+///
+///  - Linux: `drivers/firmware/dmi-id.c`
+///  - Linux: `drivers/firmware/dmi_scan.c`
+///
 #[repr(C, packed(1))]
 pub struct Type03 {
-    pub manufacturer: SMBiosTableStringRef,
-    pub r#type: u8,
-    pub version: SMBiosTableStringRef,
-    pub serial_number: SMBiosTableStringRef,
-    pub asset_tag: SMBiosTableStringRef,
-    pub bootup_state: u8,
-    pub power_supply_state: u8,
-    // And others we won't be using...
+    pub chassis_vendor: SMBiosTableStringRef, // DMI_CHASSIS_VENDOR
+    pub chassis_type: u8,                     // DMI_CHASSIS_TYPE
+    pub chassis_version: SMBiosTableStringRef, // DMI_CHASSIS_VERSION
+    pub chassis_serial: SMBiosTableStringRef, // DMI_CHASSIS_SERIAL
+    pub chassis_asset_tag: SMBiosTableStringRef, // DMI_CHASSIS_ASSET_TAG
 }
 unsafe impl Pod for Type03 {}
 impl Type03 {
