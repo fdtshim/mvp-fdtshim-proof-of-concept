@@ -156,10 +156,10 @@ pub unsafe fn try_matching<'a>(st: &SystemTable<Boot>, mapping_fdt: &'a Fdt) -> 
                     }
                     if valid {
                         let dtb_path = device.property("dtb").unwrap().as_str().unwrap();
-                        debug!("");
-                        debug!("Found a `dmi-match`-based match:");
-                        debug!("    This device matches DTB path: {}", dtb_path);
-                        debug!("");
+                        info!("");
+                        info!("Found a `dmi-match`-based match:");
+                        info!("    This device matches DTB path: {}", dtb_path);
+                        info!("");
 
                         return Some(dtb_path);
                     }
