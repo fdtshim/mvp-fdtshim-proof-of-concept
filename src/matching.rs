@@ -8,25 +8,74 @@ use log::info;
 use log::warn;
 use uefi::prelude::*;
 
+struct MatchedDTB<'a> {
+    rank: usize,
+    dtb_path: &'a str,
+}
+impl MatchedDTB<'_> {
+    pub fn new() -> Self {
+        Self {
+            rank: usize::MAX,
+            dtb_path: "",
+        }
+    }
+}
+
 pub unsafe fn try_matching<'a>(st: &SystemTable<Boot>, mapping_fdt: &'a Fdt) -> Option<&'a str> {
     debug!("-> Attempting to match device from ambiant data...");
 
     // An ambiant FDT compatible match is always preferred.
     if let Some(fdt) = get_efi_dtb_table(st) {
+        let mut matched_dtb = MatchedDTB::new();
         let ambiant_fdt = fdt::Fdt::from_ptr(fdt as *const u8).unwrap();
 
         let compatible = ambiant_fdt.root().expect("").compatible();
-        let compatibles: Vec<&str> = compatible.all().collect();
+        let ambiant_compatibles: Vec<&str> = compatible.all().collect();
 
-        match mapping_fdt.find_compatible(&compatibles) {
-            Some(matched_by_fdt) => {
-                let dtb_path = matched_by_fdt.property("dtb").unwrap().as_str().unwrap();
-                info!("Found a `compatible`-based match:");
-                info!("    This device matches DTB path: {}", dtb_path);
-
-                return Some(dtb_path);
+        if let Some(mappings) = mapping_fdt.find_node("/mapping") {
+            // For all `/mapping` nodes
+            for device in mappings.children() {
+                debug!("-- {:?}", device.name);
+                // Assuming there's a `compatible` string
+                if let Some(dtb_compatible) = device.property("compatible") {
+                    // We try to find the rank of a matched compatible
+                    if let Some(candidate_rank) =
+                        // NOTE: `find_map` returns the value of...
+                        dtb_compatible.iter_str().find_map(|dtb_compatible_string| {
+                                // ... the `position` in ambiant_compatibles of ...
+                                ambiant_compatibles
+                                    .iter()
+                                    .position(|ambiant_compatible_string| {
+                                        // ... the matched string.
+                                        *ambiant_compatible_string == dtb_compatible_string
+                                    })
+                            })
+                    {
+                        // Is this candidate better ranked?
+                        if candidate_rank < matched_dtb.rank {
+                            // Save as the match!
+                            matched_dtb.rank = candidate_rank;
+                            matched_dtb.dtb_path =
+                                device.property("dtb").unwrap().as_str().unwrap();
+                        }
+                        // We can't match anything else, so bail out...
+                        if matched_dtb.rank == 0 {
+                            break;
+                        }
+                    }
+                } else {
+                    warn!("    No compatible property for {:?}?", device.name);
+                }
             }
-            None => { /* Fall through */ }
+        }
+
+        if matched_dtb.rank != usize::MAX {
+            info!("");
+            info!("Found a `compatible`-based match:");
+            info!("    This device matches DTB path: {}", matched_dtb.dtb_path);
+            info!("");
+
+            return Some(matched_dtb.dtb_path);
         }
     }
 
